@@ -1,0 +1,156 @@
+000001*----------------------------------------------------------------*00000100
+000010 IDENTIFICATION DIVISION.                                         00001000
+000020*----------------------------------------------------------------*00002000
+000030 PROGRAM-ID. PBC1N02.                                             00003001
+000040 AUTHOR. JAVIER BEUZON.                                           00004001
+000050*                                                                 00005000
+000100* Este programa coge fecha y hora del sistema y lo muestra        00010000
+000200*----------------------------------------------------------------*00020000
+000300 ENVIRONMENT DIVISION.                                            00030000
+000400*----------------------------------------------------------------*00040000
+000401 CONFIGURATION SECTION.                                           00040100
+000402 INPUT-OUTPUT SECTION.                                            00040200
+000403 FILE-CONTROL.                                                    00040300
+000410                                                                  00041000
+000500*----------------------------------------------------------------*00050000
+000510 DATA DIVISION.                                                   00051000
+000600*----------------------------------------------------------------*00060000
+000601 FILE SECTION.                                                    00060100
+000602 WORKING-STORAGE SECTION.                                         00060200
+000603 01 WS-CONTANTES.                                                 00060300
+000604    05 CTE-NOMPGM             PIC X(7)  VALUE 'PBC1N02'.          00060400
+000605    05 DSP-WILDCARDS          PIC X(30) VALUE ALL '*'.            00060500
+000606    05 DSP-GUIONES            PIC X(30) VALUE ALL '-'.            00060602
+000607    05 CTN-5                  PIC 9     VALUE 5.                  00060703
+000608 01 WS-VARIABLES.                                                 00060802
+000609    05 AUX-DATE.                                                  00060902
+000610       10 AUX-YYYY            PIC 9(4).                           00061002
+000611       10 AUX-MM              PIC 9(2).                           00061102
+000612       10 AUX-DD              PIC 9(2).                           00061202
+000613    05 AUX-HOUR.                                                  00061302
+000614       10 AUX-HH              PIC 9(2).                           00061402
+000615       10 AUX-MM              PIC 9(2).                           00061502
+000616       10 AUX-SS              PIC 9(2).                           00061602
+000617       10 AUX-CC              PIC 9(2).                           00061702
+000618    05 AUX-DAY.                                                   00061802
+000619       10 FILLER              PIC X(9) VALUE 'LUNES    '.         00061902
+000620       10 FILLER              PIC X(9) VALUE 'MARTES   '.         00062002
+000621       10 FILLER              PIC X(9) VALUE 'MIERCOLES'.         00062102
+000622       10 FILLER              PIC X(9) VALUE 'JUEVES   '.         00062202
+000623       10 FILLER              PIC X(9) VALUE 'VIERNES  '.         00062302
+000624       10 FILLER              PIC X(9) VALUE 'SABADO   '.         00062402
+000625       10 FILLER              PIC X(9) VALUE 'DOMINGO  '.         00062504
+000626    05 TBL-DAY-WEEK REDEFINES AUX-DAY OCCURS 7 PIC X(9).          00062602
+000627    05 AUX-MONTH.                                                 00062702
+000628       10 FILLER              PIC X(10) VALUE 'ENERO     '.       00062802
+000629       10 FILLER              PIC X(10) VALUE 'FEBRERO   '.       00062902
+000630       10 FILLER              PIC X(10) VALUE 'MARZO     '.       00063002
+000631       10 FILLER              PIC X(10) VALUE 'ABRIL     '.       00063102
+000632       10 FILLER              PIC X(10) VALUE 'MAYO      '.       00063202
+000633       10 FILLER              PIC X(10) VALUE 'JUNIO     '.       00063302
+000634       10 FILLER              PIC X(10) VALUE 'JULIOL    '.       00063402
+000635       10 FILLER              PIC X(10) VALUE 'AGOSTO    '.       00063502
+000636       10 FILLER              PIC X(10) VALUE 'SEPTIEMBRE'.       00063602
+000637       10 FILLER              PIC X(10) VALUE 'OCTUBRE   '.       00063702
+000638       10 FILLER              PIC X(10) VALUE 'NOVIEMBRE '.       00063802
+000639       10 FILLER              PIC X(10) VALUE 'DICIEMBRE '.       00063902
+000641    05 TBL-MONTH REDEFINES AUX-MONTH OCCURS 12 PIC X(10).         00064102
+000642    05 WS-NAME-USER           PIC X(20).                          00064202
+000643    05 WS-AUX-INSPECT         PIC X(20).                          00064304
+000644    05 WS-NUMBER              PIC 9(2).                           00064404
+000645    05 WS-NAME-LENGHT         PIC 9(2).                           00064505
+000646    05 WS-DAY-LENGTH          PIC 9(2).                           00064604
+000647    05 WS-MONTH-LENGTH        PIC 9(2).                           00064705
+000649    05 NUM-DAY                PIC 9.                              00064905
+000650    05 NUM-LINEA              PIC 9.                              00065005
+000660                                                                  00066002
+000700*----------------------------------------------------------------*00070000
+000710 PROCEDURE DIVISION.                                              00071000
+000800*----------------------------------------------------------------*00080000
+000810     PERFORM 1000-INICIO                                          00081000
+000820     PERFORM 2000-PROCESS                                         00082000
+000830     PERFORM 3000-END                                             00083000
+000840     .                                                            00084000
+000850                                                                  00085000
+000851*------------*                                                    00085100
+000860 1000-INICIO.                                                     00086000
+000861*------------*                                                    00086100
+000862     INITIALIZE  WS-VARIABLES                                     00086201
+000863     MOVE 0                       TO NUM-LINEA                    00086302
+000864     MOVE 0                       TO WS-DAY-LENGTH                00086404
+000865     MOVE 0                       TO WS-NAME-LENGHT               00086504
+000866                                                                  00086604
+000867     PERFORM INSERTAR-ESPACIOS UNTIL NUM-LINEA > CTN-5            00086704
+000890     .                                                            00089001
+000900                                                                  00090000
+000910*------------*                                                    00091000
+001000 2000-PROCESS.                                                    00100000
+001010*------------*                                                    00101000
+001011*    ACCEPT nombre_del_campo FROM origen                          00101101
+001012*       origen: DATE          ->    YYMMDD                        00101200
+001013*               DATE YYYYMMDD ->  YYYYMMDD                        00101300
+001014*               DAY           ->    YYDDD                         00101400
+001015*               DAY YYYYDDD   ->  YYYYDDD                         00101500
+001016*               DAY-OF-WEEK   ->  N m entre 1 y 7                 00101600
+001017*               TIME          ->  HHMMSSCC                        00101700
+001018     PERFORM 2100-FEED-FIELDS                                     00101801
+001019     PERFORM 2300-DISPLAY-RESULTS                                 00101901
+001020     .                                                            00102001
+001021                                                                  00102100
+001022 2100-FEED-FIELDS.                                                00102201
+001023     ACCEPT AUX-DATE FROM DATE YYYYMMDD                           00102301
+001024     ACCEPT AUX-HOUR FROM TIME                                    00102401
+001025     ACCEPT NUM-DAY  FROM DAY-OF-WEEK                             00102501
+001026                                                                  00102600
+001027     MOVE 'Roger'                       TO WS-NAME-USER           00102704
+001028     MOVE WS-NAME-USER                  TO WS-AUX-INSPECT         00102804
+001029     PERFORM 4100-ADAPTAR-LONGITUD                                00102904
+001030     MOVE WS-NUMBER                     TO WS-NAME-LENGHT         00103004
+001031                                                                  00103104
+001032     MOVE SPACES                        TO WS-AUX-INSPECT         00103204
+001033     MOVE TBL-MONTH(AUX-MM OF AUX-DATE) TO WS-AUX-INSPECT         00103304
+001034     PERFORM 4100-ADAPTAR-LONGITUD                                00103404
+001035     MOVE WS-NUMBER                     TO WS-MONTH-LENGTH        00103505
+001036                                                                  00103605
+001037     MOVE SPACES                        TO WS-AUX-INSPECT         00103705
+001038     MOVE TBL-DAY-WEEK(NUM-DAY)         TO WS-AUX-INSPECT         00103805
+001039     PERFORM 4100-ADAPTAR-LONGITUD                                00103905
+001040     MOVE WS-NUMBER                     TO WS-DAY-LENGTH          00104005
+001041     .                                                            00104104
+001042                                                                  00104204
+001043 4100-ADAPTAR-LONGITUD.                                           00104304
+001044     MOVE 0                             TO WS-NUMBER              00104404
+001045     INSPECT WS-AUX-INSPECT TALLYING WS-NUMBER FOR ALL SPACES     00104504
+001046     COMPUTE WS-NUMBER = (LENGTH OF WS-AUX-INSPECT) - WS-NUMBER   00104605
+001047     .                                                            00104701
+001048                                                                  00104800
+001049 2300-DISPLAY-RESULTS.                                            00104900
+001050     DISPLAY DSP-WILDCARDS                                        00105002
+001060     DISPLAY ' INICIO DEL PROGRAMA ' CTE-NOMPGM                   00106002
+001070     DISPLAY DSP-GUIONES                                          00107002
+001080                                                                  00108002
+001100     DISPLAY ' Hola ' WS-NAME-USER(1:WS-NAME-LENGHT) '!'          00110004
+001200     DISPLAY ' Hoy es ' TBL-DAY-WEEK(NUM-DAY)(1:WS-DAY-LENGTH)    00120005
+001210             ', ' AUX-DD OF AUX-DATE                              00121002
+001300             ' de ' TBL-MONTH(AUX-MM OF AUX-DATE)                 00130005
+001301                                             (1:WS-MONTH-LENGTH)  00130105
+001302             ' del ' AUX-YYYY '.'                                 00130202
+001303     DISPLAY ' Es tarde! Son las ' AUX-HH OF AUX-HOUR ':'         00130302
+001304                                   AUX-MM OF AUX-HOUR 'h'         00130402
+001305                                                                  00130502
+001306     DISPLAY DSP-GUIONES                                          00130602
+001307     DISPLAY '  FINAL DEL PROGRAMA ' CTE-NOMPGM                   00130702
+001308     DISPLAY DSP-WILDCARDS                                        00130802
+001309     .                                                            00130902
+001310                                                                  00131002
+001311 INSERTAR-ESPACIOS.                                               00131102
+001312     DISPLAY ' '                                                  00131202
+001313     ADD 1 TO NUM-LINEA                                           00131302
+001314     .                                                            00131402
+001315                                                                  00131502
+001320*------------*                                                    00132000
+001400 3000-END.                                                        00140000
+001500*------------*                                                    00150000
+001720     STOP RUN.                                                    00172001
+001800                                                                  00180000
+
